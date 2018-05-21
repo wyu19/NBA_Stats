@@ -1,15 +1,9 @@
-
 import requests
-import re
 from bs4 import BeautifulSoup
 from html.parser import HTMLParser
 
-# TAG_RE = re.compile('r<[^>]+>a')
-#
-# def remove_tags(text):
-#     return TAG_RE.sub('', text)
-
-
+# maybe make it so we can see how much pts, asst, and rebounds each player gets on avg for every team.
+# then write a script to automatically put in all the teams in.
 class TagStripper(HTMLParser):
 
     def __init__(self):
@@ -53,14 +47,12 @@ while cont:
     print(title)
     td = soup.find_all('td')
 
-    # td = strip_tags(str(td))
-    # print(td)
+    lines = ("{}. {}\n".format(index, span.get_text(strip=True).rstrip("+"))
+             for index, span in enumerate(td, 1))
+    ## format this to look like the table. How to implement if statements on generators
+    ## create a string for each player that will add up all their info into one long string
+    print("".join(lines))
 
-    notag_soup = BeautifulSoup(str(td), "html.parser")
-    print(notag_soup.get_text())
-
-    # a = remove_tags(str(a))
-    # print(a)
 
     #http://www.espn.com/nba/team/roster/_/name/gs/index  scrape this!
     url_dict.update({url: req})  #remove all tags regular expression is not working
