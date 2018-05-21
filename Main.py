@@ -1,38 +1,34 @@
-import sys
-from PyQt4.QtGui import QApplication
-from PyQt4.QtCore import QUrl
-from PyQt4.QtWebKit import QWebPage #lets us load the page and act like a browser
-import urllib.request
+
 import requests
 import re
-import bs4 as bs
 from bs4 import BeautifulSoup
+from html.parser import HTMLParser
 
-class Client(QWebPage):
-
-    def __init__(self, url):
-        self.app = QApplication(sys.argv)
-        QWebPage.__init__(self)
-        self.loadFinished.connect(self.on_page_load) #probably the error
-        self.mainFrame().load(QUrl(url))
-        self.app.exec_()
-
-    def on_page_load(self):
-        self.app.quit()
-
-url = 'http://www.espn.com/nba/statistics'
-client_response = Client(url)
-source = client_response.mainFrame().toHtml()
-soup = bs.BeautifulSoup(source, 'html.parser')
-js_test = soup.find_all('td')
-print(js_test)
-
-TAG_RE = re.compile(r'<[^>]+>')
-
-def remove_tags(text):
-    return TAG_RE.sub('', text)
+# TAG_RE = re.compile('r<[^>]+>a')
+#
+# def remove_tags(text):
+#     return TAG_RE.sub('', text)
 
 
+class TagStripper(HTMLParser):
+
+    def __init__(self):
+        self.reset()
+        self.strict = False
+        self.convert_charrefs = True
+        self.fed = []
+
+    def handle_data(self, d):
+        self.fed.append(d)
+
+    def get_data(self):
+        return ''.join(self.fed)
+
+
+def strip_tags(html):
+    s = TagStripper()
+    s.feed(html)
+    return s.get_data()
 
 
 def connect(link,  **kwargs):
@@ -45,19 +41,7 @@ def connect(link,  **kwargs):
 
     return response
 
-
 url_dict = {}
-# url_main = input("Enter the url you want to scrape and then enter a space and enter to submit: ")
-# req = connect(url_main,  name="fake name", email="yuw321@gmail.com")
-# html = req.text
-#
-# bs = BeautifulSoup(html, "html.parser")
-# titles = bs.find_all(attrs={'listingsignupbar__title'})
-# titles = str(titles)
-# titles = remove_tags(titles)
-# print(titles)
-# url_dict.update({url_main: req})
-# print(url_dict)
 
 cont = True
 while cont:
@@ -67,8 +51,19 @@ while cont:
     soup = BeautifulSoup(html, "html.parser")
     title = soup.title.string
     print(title)
+    td = soup.find_all('td')
 
-    url_dict.update({url: req})
+    # td = strip_tags(str(td))
+    # print(td)
+
+    notag_soup = BeautifulSoup(str(td), "html.parser")
+    print(notag_soup.get_text())
+
+    # a = remove_tags(str(a))
+    # print(a)
+
+    #http://www.espn.com/nba/team/roster/_/name/gs/index  scrape this!
+    url_dict.update({url: req})  #remove all tags regular expression is not working
 
     if req.status_code != 200:
         if req.status_code == 404:
