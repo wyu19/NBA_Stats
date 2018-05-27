@@ -35,8 +35,33 @@ def connect(link,  **kwargs):
 
     return response
 
-url_dict = {}
+def team_table(roster):
+    same_player = True
+    count = 0;
+    for i, x in enumerate(roster):
+        if i <= 10:
+            print('{} '.format(roster[x-1]))
+        elif i > 11 and same_player:
+            print(roster[x])
+            count += 1
+            if count >= 8 and roster[x].isdigit():
+                same_player = True;
+            elif count >= 8:
+                same_player = False
 
+        else:
+            same_player = True
+            count = 0
+            print('\n {}'.format(roster[x]))
+
+
+
+
+
+url_dict = {}
+## format this to look like the table. How to implement if statements on generators
+## create a string for each player that will add up all their info into one long string
+#maybe make a class for each player or team
 cont = True
 while cont:
     url = input("Enter a url to see if they are scrapable: ")
@@ -45,17 +70,21 @@ while cont:
     soup = BeautifulSoup(html, "html.parser")
     title = soup.title.string
     print(title)
-    td = soup.find_all('td')
+    roster_info = soup.find_all('td')
+    team = strip_tags(str(roster_info)).strip('] [')
+    print(team)
+    team = team.split(', ')
+    print(team)
 
-    lines = ("{}. {}\n".format(index, span.get_text(strip=True).rstrip("+"))
-             for index, span in enumerate(td, 1))
-    ## format this to look like the table. How to implement if statements on generators
-    ## create a string for each player that will add up all their info into one long string
-    print("".join(lines))
+
+
+
+
+
 
 
     #http://www.espn.com/nba/team/roster/_/name/gs/index  scrape this!
-    url_dict.update({url: req})  #remove all tags regular expression is not working
+    url_dict.update({url: req})
 
     if req.status_code != 200:
         if req.status_code == 404:
