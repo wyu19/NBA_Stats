@@ -27,7 +27,7 @@ def strip_tags(html):
 
 def connect(link,  **kwargs):
     link = link.strip()
-    user_agent = 'python-requests/4.82 (Compatible; wen; mailto: yuw321@gmail.com)'
+    user_agent = 'python-requests/4.82 (Compatible; mailto: )'
     if kwargs:
         user_agent = 'python-request/4.8.2 (Compatible, {}, mailto:{})'.format(kwargs['name'], kwargs['email'])
 
@@ -35,33 +35,28 @@ def connect(link,  **kwargs):
 
     return response
 
+
 def team_table(roster):
-    same_player = True
-    count = 0;
-    for i, x in enumerate(roster):
-        if i <= 10:
-            print('{} '.format(roster[x-1]))
-        elif i > 11 and same_player:
-            print(roster[x])
-            count += 1
-            if count >= 8 and roster[x].isdigit():
-                same_player = True;
-            elif count >= 8:
-                same_player = False
+    table_title = ""
+
+    for i in roster[:9]:
+        table_title += i + "  "
+
+    print(table_title)
+    player_info = "             "
+
+    for i, info in enumerate(roster[9:], 1):
+
+        if i % 8 != 0:
+            player_info += info + "  "
 
         else:
-            same_player = True
-            count = 0
-            print('\n {}'.format(roster[x]))
-
-
-
+            player_info += " " + info
+            print(player_info)
+            player_info = "             "
 
 
 url_dict = {}
-## format this to look like the table. How to implement if statements on generators
-## create a string for each player that will add up all their info into one long string
-#maybe make a class for each player or team
 cont = True
 while cont:
     url = input("Enter a url to see if they are scrapable: ")
@@ -69,17 +64,11 @@ while cont:
     html = req.text
     soup = BeautifulSoup(html, "html.parser")
     title = soup.title.string
-    print(title)
+    print("\n"+ title + "\n")
     roster_info = soup.find_all('td')
     team = strip_tags(str(roster_info)).strip('] [')
-    print(team)
     team = team.split(', ')
-    print(team)
-
-
-
-
-
+    team_table(team)
 
 
 
