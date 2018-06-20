@@ -18,9 +18,9 @@ class TagStripper(HTMLParser):
         return ''.join(self.fed)
 
 
-class NestedDict(dict):
+class Vividict(dict):
     def __missing__(self, key):
-        value = self[key] =  type(self)()
+        value = self[key] = type(self)()
         return value
 
 
@@ -61,30 +61,58 @@ def team_table(roster):
             player_info = "             "
 
 
+def get_players(roster):   #extracts all the players name from the list of info from the roster
+    players_name = []
+    pname = 0;
+    for i, names in enumerate(roster, 1):
+        if i == 1 or i == 9:
+            players_name.append(names)
+        elif pname == 7:
+            players_name.append(names)
+            pname = 0;
+        elif i > 9:
+            pname += 1
+
+    return players_name
+
+def get_salary(roster):  #starts at index 16
+    salaries = []
+    for i, salary in enumerate(roster, 0):
+        if i == 0 or i % 8 == 0:
+            salaries.append(salary)
+    return salaries
+
+
+
+
+
+
+
+#team_dict[teams][player][stats]
+#reused variables
 url_dict = {}
-team_initials = ['gsw', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
-                 'ind', 'lac', 'mem', 'mia', 'mil', 'nop', 'nyk', 'okc', 'orl', 'phi', 'phx',
+team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
+                  'ind', 'lac', 'mem', 'mia', 'mil', 'nop', 'nyk', 'okc', 'orl', 'phi', 'phx',
                  'por', 'sac', 'sas', 'tor', 'uta', 'was'
                  ]
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
-team_dict = NestedDict()
 stats_list = ["Pts","Ast","Mins","Rebs","Stls","Blks","Salary"]
 stats = {key: None for key in stats_list }
+team_dict = Vividict()
 
 
+
+# #accesses all the nba roster links and infos
 # for init in team_initials:
 #     roster_url = roster_link+init
 #     stat_url = stats_link+init
 #     roster_req = connect(roster_url, name="test", email="test_mail")
 #     stat_req = connect(stat_url, name="test", email="test_mail")
-#     stat_html = stat_req
-#     roster_html = roster_req
+#     stat_html = stat_req.text
+#     roster_html = roster_req.text
 #     stat_soup = BeautifulSoup(stat_html, "html.parser")
 #     roster_soup = BeautifulSoup(roster_html, "html.parser")
-
-
-
 
 cont = True
 while cont:
@@ -97,7 +125,16 @@ while cont:
     roster_info = soup.find_all('td')
     team = strip_tags(str(roster_info)).strip('] [')
     team = team.split(', ')
+    players = get_players(team[10:])
+    salaries = get_salary(team[16:])
+    print(team)
+    print(players)
+    print(salaries)
     team_table(team)
+
+
+
+
 
     url_dict.update({url: req})
 
