@@ -61,26 +61,13 @@ def team_table(roster):
             player_info = "             "
 
 
-def get_players(roster):   #extracts all the players name from the list of info from the roster
-    players_name = []
-    pname = 0;
-    for i, names in enumerate(roster, 1):
-        if i == 1 or i == 9:
-            players_name.append(names)
-        elif pname == 7:
-            players_name.append(names)
-            pname = 0;
-        elif i > 9:
-            pname += 1
 
-    return players_name
-
-def get_salary(roster):  #starts at index 16
-    salaries = []
-    for i, salary in enumerate(roster, 0):
+def get_infotype(roster):  #salary index starts at 16, player name index starts at 10
+    info_list = []
+    for i, info in enumerate(roster, 0):
         if i == 0 or i % 8 == 0:
-            salaries.append(salary)
-    return salaries
+            info_list.append(info)
+    return info_list
 
 
 
@@ -123,14 +110,20 @@ while cont:
     title = soup.title.string
     print("\n" + title + "\n")
     roster_info = soup.find_all('td')
+    print(roster_info)
     team = strip_tags(str(roster_info)).strip('] [')
     team = team.split(', ')
-    players = get_players(team[10:])
-    salaries = get_salary(team[16:])
     print(team)
-    print(players)
-    print(salaries)
-    team_table(team)
+
+
+
+
+    # players = get_infotype(team[10:])    used for roster
+    # salaries = get_infotype(team[16:])
+    # print(team)
+    # print(players)
+    # print(salaries)
+    # team_table(team)
 
 
 
