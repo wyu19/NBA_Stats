@@ -61,18 +61,33 @@ def team_table(roster):
             player_info = "             "
 
 
-
-def get_infotype(roster):  #salary index starts at 16, player name index starts at 10
-    info_list = []
-    for i, info in enumerate(roster, 0):
-        if i == 0 or i % 8 == 0:
-            info_list.append(info)
+def extract_info(roster, skip):   #gives the 1st and 8th element  of the input list
+    info_list = roster[0::skip]
     return info_list
 
 
+def create_player_keys(roster):
+    d = Vividict()
+    player_names = extract_info(roster, 15)
+    for i in player_names:
+        if i == ("Totals"):   #total is left after cutting off the strings but not sure if i should do the if statement or just have an constant number
+            print(d)
+            return d
+        else:
+            d[i]
+    print(d)
+    return d
 
+def create_stats_keys(dict, stats):
+    for i in dict:
+        for j in stats:
+            dict[i][j]
+    return dict
 
-
+def sort_stats(stats):  #how to efficiently get the stats i want, check if its a number,
+    l = []
+    for i in stats,:
+        l.append(i)
 
 
 #team_dict[teams][player][stats]
@@ -84,8 +99,7 @@ team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', '
                  ]
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
-stats_list = ["Pts","Ast","Mins","Rebs","Stls","Blks","Salary"]
-stats = {key: None for key in stats_list }
+stats_list = ["Min", "PPG", "RPG", "APG", "SPG", "BPG", "Salary"]
 team_dict = Vividict()
 
 
@@ -114,12 +128,14 @@ while cont:
     team = strip_tags(str(roster_info)).strip('] [')
     team = team.split(', ')
     print(team)
+    all_stats = sort_stats(team[17:])
+    stats_dict = create_player_keys(team[15:])
+    stats_dict = create_stats_keys(stats_dict, stats_list)
+    print(stats_dict)
 
 
-
-
-    # players = get_infotype(team[10:])    used for roster
-    # salaries = get_infotype(team[16:])
+    # players = extract_info(team[10:], 8)
+    # salaries = extract_info(team[16:], 8)
     # print(team)
     # print(players)
     # print(salaries)
