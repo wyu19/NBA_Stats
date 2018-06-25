@@ -85,9 +85,22 @@ def create_stats_keys(dict, stats):
     return dict
 
 def sort_stats(stats):  #how to efficiently get the stats i want, check if its a number,
-    l = []
-    for i in stats,:
-        l.append(i)
+    m = [[0 for x in range(8)] for y in range(15)]
+    stat_indices = [0, 2, 3, 6, 7, 8, 9]
+    for i in range(0,15):
+        index = 0
+        for j, info in enumerate(stats, 0):
+            if j >= 12:
+
+                break;
+            if j in stat_indices:     #stats will keep starting at the beginning, so i should  use
+                m[i][index] = info    # recursion
+                index += 1
+
+    print(m)
+    return m
+
+
 
 
 #team_dict[teams][player][stats]
@@ -99,7 +112,7 @@ team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', '
                  ]
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
-stats_list = ["Min", "PPG", "RPG", "APG", "SPG", "BPG", "Salary"]
+stats_list = ["GP","Min", "PPG", "RPG", "APG", "SPG", "BPG", "Salary"]
 team_dict = Vividict()
 
 
@@ -128,7 +141,9 @@ while cont:
     team = strip_tags(str(roster_info)).strip('] [')
     team = team.split(', ')
     print(team)
-    all_stats = sort_stats(team[17:])
+
+
+    all_stats = sort_stats(team[17:])  #stats matrix
     stats_dict = create_player_keys(team[15:])
     stats_dict = create_stats_keys(stats_dict, stats_list)
     print(stats_dict)
@@ -136,7 +151,6 @@ while cont:
 
     # players = extract_info(team[10:], 8)
     # salaries = extract_info(team[16:], 8)
-    # print(team)
     # print(players)
     # print(salaries)
     # team_table(team)
