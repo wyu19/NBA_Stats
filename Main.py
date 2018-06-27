@@ -84,21 +84,21 @@ def create_stats_keys(dict, stats):
             dict[i][j]
     return dict
 
-def sort_stats(stats):  #how to efficiently get the stats i want, check if its a number,
-    m = [[0 for x in range(8)] for y in range(15)]
-    stat_indices = [0, 2, 3, 6, 7, 8, 9]
-    for i in range(0,15):
-        index = 0
-        for j, info in enumerate(stats, 0):
-            if j >= 12:
+def sort_stats(stats, matr, indices, row):  #how to efficiently get the stats i want, check if its a number,
 
-                break;
-            if j in stat_indices:     #stats will keep starting at the beginning, so i should  use
-                m[i][index] = info    # recursion
-                index += 1
+    if len(stats) == 0 or row >=15:
+        return 0;
 
-    print(m)
-    return m
+    m_index = 0
+    for j, info in enumerate(stats, 0):
+        if j > 15:
+            break;
+        if j in indices:
+            matr[row][m_index] = info
+            m_index += 1
+    row += 1
+    sort_stats(stats[15:], matr, indices, row)
+
 
 
 
@@ -106,66 +106,65 @@ def sort_stats(stats):  #how to efficiently get the stats i want, check if its a
 #team_dict[teams][player][stats]
 #reused variables
 url_dict = {}
-team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
-                  'ind', 'lac', 'mem', 'mia', 'mil', 'nop', 'nyk', 'okc', 'orl', 'phi', 'phx',
-                 'por', 'sac', 'sas', 'tor', 'uta', 'was'
-                 ]
+# team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
+#                   'ind', 'lac', 'mem', 'mia', 'mil', 'nop', 'nyk', 'okc', 'orl', 'phi', 'phx',
+#                  'por', 'sac', 'sas', 'tor', 'uta', 'was'
+#                  ]
+team_initials = ['gs']
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
 stats_list = ["GP","Min", "PPG", "RPG", "APG", "SPG", "BPG", "Salary"]
 team_dict = Vividict()
 
 
+#add salary to the end of all the stats list.
+#accesses all the nba roster links and infos
+for init in team_initials:
+    roster_url = roster_link+init
+    stat_url = stats_link+init
+    roster_req = connect(roster_url, name="test", email="test_mail")
+    stat_req = connect(stat_url, name="test", email="test_mail")
+    stat_html = stat_req.text
+    roster_html = roster_req.text
 
-# #accesses all the nba roster links and infos
-# for init in team_initials:
-#     roster_url = roster_link+init
-#     stat_url = stats_link+init
-#     roster_req = connect(roster_url, name="test", email="test_mail")
-#     stat_req = connect(stat_url, name="test", email="test_mail")
-#     stat_html = stat_req.text
-#     roster_html = roster_req.text
-#     stat_soup = BeautifulSoup(stat_html, "html.parser")
-#     roster_soup = BeautifulSoup(roster_html, "html.parser")
+    stat_soup = BeautifulSoup(stat_html, "html.parser")        #scrape all the info from the stats link and splits the info
+    stat_info = stat_soup.find_all('td')
+    all_stats = strip_tags(str(stat_info)).strip('] [')
+    all_stats = all_stats.split(', ')
+    print("stat:")
+    print(all_stats)
 
-cont = True
-while cont:
-    url = input("Enter a url to see if they are scrapable: ")
-    req = connect(url, name="test_name", email="test_mail")
-    html = req.text
-    soup = BeautifulSoup(html, "html.parser")
-    title = soup.title.string
-    print("\n" + title + "\n")
-    roster_info = soup.find_all('td')
-    print(roster_info)
-    team = strip_tags(str(roster_info)).strip('] [')
-    team = team.split(', ')
-    print(team)
+    roster_soup = BeautifulSoup(roster_html, "html.parser")    #scrape all the info from the roster link and splits the info
+    roster_info = roster_soup.find_all('td')
+    roster = strip_tags(str(roster_info)).strip('] [')
+    roster = roster.split(', ')
+    print("roster")
+    print(roster)
 
+    players = extract_info(roster[10:], 8)              #sort out the players and salaries from the roster link
+    salaries = extract_info(roster[16:], 8)
+    print(players)
+    print(salaries)
+    team_table(roster)
 
-    all_stats = sort_stats(team[17:])  #stats matrix
-    stats_dict = create_player_keys(team[15:])
+    stats_matrix = [[None for x in range(8)] for y in range(15)]    # begin building the stats matrix
+    stat_indices = [0, 2, 3, 6, 7, 8, 9]
+    row = 0
+    sort_stats(all_stats[17:], stats_matrix, stat_indices, row)
+    print(stats_matrix)
+    stats_dict = create_player_keys(all_stats[15:])
     stats_dict = create_stats_keys(stats_dict, stats_list)
     print(stats_dict)
 
 
-    # players = extract_info(team[10:], 8)
-    # salaries = extract_info(team[16:], 8)
-    # print(players)
-    # print(salaries)
-    # team_table(team)
+    url_dict.update({roster_url: roster_req})
+    url_dict.update({stat_url: roster_req})
 
-
-
-
-
-    url_dict.update({url: req})
-
-    if req.status_code != 200:
-        if req.status_code == 404:
-            print("robots.txt not found for {}").format(str(url))
+    if roster_req.status_code or stat_req.status_code != 200:
+        if roster_req.status_code == 404:
+            print("robots.txt not found for {}").format(str(roster_url))
         else:
-            print("There has been a error with scraping this site {}").format(str(url))
+            print("{} 's status code is {} and {} 's status code is {} ".format(roster_url, roster_req.status_code, stat_url, stat_req.status_code))
 
     add_more = input("Do you want to continue? Enter yes or no: ")
     if add_more == 'no':
