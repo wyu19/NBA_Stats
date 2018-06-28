@@ -1,5 +1,8 @@
 import requests
-import pprint
+import dash
+from dash.dependencies import Input, Output
+import dash_core_components as dcc
+import dash_html_components as html
 from bs4 import BeautifulSoup
 from html.parser import HTMLParser
 
@@ -100,7 +103,11 @@ def sort_stats(stats, matr, indices, row):  #how to efficiently get the stats i 
     sort_stats(stats[15:], matr, indices, row)
 
 
-
+def add_salaries(matr, player_sal): #names arent part of the stats yet so i need to attach the stats to it
+    for i in player_sal:
+        for k, j in enumerate(matr,0):
+            if i == j:
+                matr[k][len(matr)] = j.values()
 
 
 #team_dict[teams][player][stats]
@@ -143,14 +150,17 @@ for init in team_initials:
 
     players = extract_info(roster[10:], 8)              #sort out the players and salaries from the roster link
     salaries = extract_info(roster[16:], 8)
-    print(players)
-    print(salaries)
+    player_salaries = dict(zip(players, salaries))
+    print("player_salaries: {}".format(player_salaries))
     team_table(roster)
 
     stats_matrix = [[None for x in range(8)] for y in range(15)]    # begin building the stats matrix
     stat_indices = [0, 2, 3, 6, 7, 8, 9]
     row = 0
     sort_stats(all_stats[17:], stats_matrix, stat_indices, row)
+    print(stats_matrix)
+    add_salaries(stats_matrix, player_salaries)
+    print("added salaries ------------")
     print(stats_matrix)
     stats_dict = create_player_keys(all_stats[15:])
     stats_dict = create_stats_keys(stats_dict, stats_list)
