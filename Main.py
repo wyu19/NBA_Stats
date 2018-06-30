@@ -69,21 +69,17 @@ def extract_info(roster, skip):   #gives the 1st and 8th element  of the input l
     return info_list
 
 
-def create_player_keys(roster):
+def create_player_keys(roster, stats):
     d = Vividict()
     player_names = extract_info(roster, 15)
     for i in player_names:
         if i == ("Totals"):   #total is left after cutting off the strings but not sure if i should do the if statement or just have an constant number
             return d
         else:
-            d[i]
+            d[i] = {j: 0 for j in stats}   #use all the elements in stats as keys for the roster
+
     return d
 
-def create_stats_keys(dict, stats):
-    for i in dict:
-        for j in stats:
-            dict[i][j]
-    return dict
 
 def sort_stats(stats, matr, indices, row):  #how to efficiently get the stats i want, check if its a number,
 
@@ -112,7 +108,7 @@ def add_salaries(stats_dict, player_sal): #names arent part of the stats yet so 
     for i in player_sal:
         for j in stats_dict:
             if i == j:           #if the players name in the stats dict matches the player name in the salary append the salary to that player.
-                stats_dict[j][7] = player_sal[i];
+                stats_dict[j][7] = player_sal[i]
 
 
 
@@ -128,8 +124,8 @@ team_initials = ['gs']
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
 stats_list = ["GP","Min", "PPG", "RPG", "APG", "SPG", "BPG", "Salary"]
-team_dict = Vividict()
-team_dict[str(team_initials)]
+team_dict = {}
+
 
 #add salary to the end of all the stats list.
 #accesses all the nba roster links and infos
@@ -146,30 +142,31 @@ for init in team_initials:
     all_stats = strip_tags(str(stat_info)).strip('] [')
     all_stats = all_stats.split(', ')
 
-
     roster_soup = BeautifulSoup(roster_html, "html.parser")    #scrape all the info from the roster link and splits the info
     roster_info = roster_soup.find_all('td')
     roster = strip_tags(str(roster_info)).strip('] [')
     roster = roster.split(', ')
 
-
     players = extract_info(roster[10:], 8)              #sort out the players and salaries from the roster link
     salaries = extract_info(roster[16:], 8)
     player_salaries = dict(zip(players, salaries))
-    #print("player_salaries: {}".format(player_salaries))
-    # team_table(roster)
 
     stats_matrix = [[None for x in range(8)] for y in range(15)]    # begin building the stats matrix
     stat_indices = [0, 2, 3, 6, 7, 8, 9]
     row = 0
     sort_stats(all_stats[17:], stats_matrix, stat_indices, row)
-    stats_dict = create_player_keys(all_stats[15:])
-    stats_dict = create_stats_keys(stats_dict, stats_list)   #i can combine create player and create stats function
-    fill_stats(stats_matrix, stats_dict)      #finished inputting all the stats into the player's stat keys
-    add_salaries(stats_dict, player_salaries)
-    print(stats_dict)
-    # team_dict[team_initials][stats_dict]
-    # print(team_dict)
+    stats_dict = create_player_keys(all_stats[15:], stats_list)   # creates a dict of all the players names with the stats as the keys and 0 as the values
+
+    fill_stats(stats_matrix, stats_dict)
+    add_salaries(stats_dict, player_salaries) #finished inputting all the stats into the player's stat keys
+
+    team_dict = {team_initials[0]: {p: {s: stats_dict[p][i] for i, s in enumerate(stats_list, 0)} for p in players}}
+    print(team_dict)
+
+    #1. i need all the players names -> players
+    #2. i need all the team intials -> team_initials
+    #3. i need all the stats_dict
+    #4 i need all the stats list.
 
 
     url_dict.update({roster_url: roster_req})
