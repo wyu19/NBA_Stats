@@ -73,22 +73,6 @@ def extract_info(data, skip, *break_string):
         info_list = info_list[:index]
     return info_list
 
-def sort_stats(stats, matr, indices, row):  #how to efficiently get the stats i want, check if its a number,
-
-    if len(stats) == 0 or row >=15:
-        return 0;
-
-    m_index = 0
-    for j, info in enumerate(stats, 0):
-        if j > 16:
-            break;
-        if j in indices:
-            matr[row][m_index] = info
-            m_index += 1
-    row += 1
-    sort_stats(stats[16:], matr, indices, row)
-
-
 # def fill_stats(matr, team_dict, stats_list):  #problem is that stats dict will have the repetition of names
 #     team_dict
 #
@@ -97,8 +81,19 @@ def sort_stats(stats, matr, indices, row):  #how to efficiently get the stats i 
 #   #     for i,s in zip(stats_matrix, stats_list):
 #   #         team_dict[p]
 #   #
+#remove all the unnecessary stats and create a new list with all the salaries in it.
 
 
+def sort_allstats(stats, stat_indices):
+    s = []
+    counter = 0;
+    for i in stats:
+        if counter == 16:
+            counter = 0;
+        if counter in stat_indices:
+            s.append(i)
+        counter += 1
+    return s
 
 
 def add_salaries(stats_dict, player_sal): #names arent part of the stats yet so i need to attach the stats to it
@@ -108,7 +103,26 @@ def add_salaries(stats_dict, player_sal): #names arent part of the stats yet so 
                 stats_dict[j][7] = player_sal[i]
 
 
+def fill_dict(t_dict, w_stats, stats_symbols, salary):
+    for p in t_dict:
+        for s, i in zip(w_stats, stats_symbols):
+            if i == "Salary":
+                if p not in salary:
+                    t_dict[p][i] = 0
+                else:
+                    t_dict[p][i] = salary[p]
+            else:
+                t_dict[p][i] = s            #create a case to handle exception(player no longer on roster and does not have a salary)
+        w_stats = w_stats[7:]
 
+#make a player:salary dictionary so i can call it to fill in the salary part.
+def create_salary_dict(roster_info):
+    player = [p for i, p in enumerate(roster_info) if i%8 == 0]
+    salary = [s for i, s in enumerate(roster_info[6:]) if i%8 == 0]  #this isnt right
+    print(player)
+    print(salary)
+    sal_dict = dict(zip(player, salary))
+    return sal_dict
 
 #team_dict[teams][player][stats]
 #reused variables
@@ -116,7 +130,7 @@ url_dict = {}
 team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
                   'ind', 'lac', 'mem', 'mia', 'mil', 'nop', 'nyk', 'okc', 'orl', 'phi', 'phx',
                  'por', 'sac', 'sas', 'tor', 'uta', 'was'
-                 ]
+                ]
 
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
@@ -146,13 +160,19 @@ for t, init in enumerate(team_initials, 0):
 
     players = extract_info(all_stats[16:], 16, 'Totals')              #sort out the players and salaries from the roster link
     salaries = extract_info(roster[16:], 8)
-    player_salaries = dict(zip(players, salaries))          #need to cut off the extra stuff from after players
-    print(players)
 
+    player_salaries = create_salary_dict(roster[10:])        #need to cut off the extra stuff from after players
+    print(player_salaries)
+    print(players)
 
     players_dict = {p: {s: 0 for s in stats_list} for p in players}  #created the dictionary with all the players from one team
     print(players_dict)
-    team_dict = {t: {p: {s: 0 for s in stats_list} for p in players} for t in team_initials}
+    team_dict = {team_initials[t]: {p: {s: 0 for s in stats_list} for p in players}}
+    print(team_dict)
+    stats_indices = [2, 4, 5, 8, 9, 10, 11]
+    wanted_stats = sort_allstats(all_stats[16:], stats_indices)
+    print(wanted_stats)
+    fill_dict(team_dict[team_initials[t]], wanted_stats, stats_list, player_salaries)
     print(team_dict)
 # i just need to fill in the rest of the stats
 
