@@ -102,7 +102,7 @@ def fill_dict(t_dict, w_stats, stats_symbols, salary):
 def zero_salaries(t_dict):  #makes all the salaries that are '\xa0' = 0
     for p in t_dict:
         if t_dict[p]['Salary'] == '\xa0':
-           t_dict[p]['Salary'] = 0
+            t_dict[p]['Salary'] = 0
 
 #make a player:salary dictionary so i can call it to fill in the salary part.
 
@@ -118,6 +118,7 @@ def print_team(team_dict):
     for i in team_dict:
         for p in team_dict[i]:
             print("{} {}".format(p, team_dict[i][p]))
+
 
 #team_dict[teams][player][stats]
 #reused variables
@@ -157,7 +158,8 @@ for t, init in enumerate(team_initials, 0):
 
     players = extract_info(all_stats[16:], 16, 'Totals')              #sort out the players and salaries from the roster link
     player_salaries = create_salary_dict(roster[10:])        #need to cut off the extra stuff from after players
-    salaries = list(player_salaries.values())
+    # salaries = list(player_salaries.values())
+
 
     players_dict = {p: {s: 0 for s in stats_list} for p in players}  #created the dictionary with all the players from one team
     team_dict = {team_initials[t]: {p: {s: 0 for s in stats_list} for p in players}}
@@ -166,6 +168,8 @@ for t, init in enumerate(team_initials, 0):
     fill_dict(team_dict[team_initials[t]], wanted_stats, stats_list, player_salaries)
     zero_salaries(team_dict[team_initials[t]])
     print_team(team_dict)
+    player_salaries = {p: (0 if player_salaries[p] == '\xa0' else player_salaries[p]) for p in player_salaries}
+    print(player_salaries)
 
     url_dict.update({roster_url: roster_req})
     url_dict.update({stat_url: roster_req})
@@ -184,14 +188,15 @@ print(url_dict)
 
 # Graph code ----------------------------------------------------------------
 
-# app = dash.Dash()
-# app.layout = html.Div(children=[html.H1('NBA Statistics'), dcc.Graph(id='all_stats',
-#                                                                      figure ={
-#                                                                          'data': [{'x': list(player_salaries.keys()),
-#                                                                                    'y': list(player_salaries.values()),
-#                                                                                   'type': 'line', 'name': 'boats'}]
-#                                                                           })
-#                                                                           ])
-#
-# if __name__ == '__main__':
-#     app.run_server(debug=True)
+app = dash.Dash()
+app.layout = html.Div(children=[html.H1('NBA Statistics'), dcc.Graph(id='player_salary',
+                                figure={
+                                      'data': [
+                                       {'x': list(player_salaries.keys()),
+                                        'y': list(player_salaries.values()),
+                                       'type': 'line', 'name': 'player_salary'}]
+                                         }),
+                                      ])
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
