@@ -114,10 +114,10 @@ def create_salary_dict(roster_info):
     return sal_dict
 
 
-def print_team(team_dict):
-    for i in team_dict:
-        for p in team_dict[i]:
-            print("{} {}".format(p, team_dict[i][p]))
+def print_team(t_dict):
+    for i in t_dict:
+        for p in t_dict[i]:
+            print("{} {}".format(p, t_dict[i][p]))
 
 
 #team_dict[teams][player][stats]
@@ -168,7 +168,7 @@ for t, init in enumerate(team_initials, 0):
     fill_dict(team_dict[team_initials[t]], wanted_stats, stats_list, player_salaries)
     zero_salaries(team_dict[team_initials[t]])
     print_team(team_dict)
-    player_salaries = {p: (0 if player_salaries[p] == '\xa0' else player_salaries[p]) for p in player_salaries}
+    player_salaries = {p: (0 if player_salaries[p] == '\xa0' else player_salaries[p]) for p in player_salaries}   #replace all the '\xa0 with 0's
     print(player_salaries)
 
     url_dict.update({roster_url: roster_req})
@@ -189,14 +189,54 @@ print(url_dict)
 # Graph code ----------------------------------------------------------------
 
 app = dash.Dash()
-app.layout = html.Div(children=[html.H1('NBA Statistics'), dcc.Graph(id='player_salary',
-                                figure={
-                                      'data': [
-                                       {'x': list(player_salaries.keys()),
-                                        'y': list(player_salaries.values()),
-                                       'type': 'line', 'name': 'player_salary'}]
-                                         }),
-                                      ])
+app.layout = html.Div([html.H1('NBA Statistics'),
+                       html.Label('Select a team'),
+                       dcc.Dropdown(
+                           options=[
+                               {'label': 'Golden State Warriors', 'value': 'gs'},
+                               {'label': 'Boston Celtics', 'value': 'bos'},
+                               {'label': 'Atlanta Hawks', 'value': 'atl'},
+                               {'label': 'Brooklyn Nets', 'value': 'bkn'},
+                               {'label': 'Charlotte Hornets', 'value': 'cha'},
+                               {'label': 'Chicago Bulls', 'value': 'chi'},
+                               {'label': 'Dallas Mavericks', 'value': 'dal'},
+                               {'label': 'Denver Nuggets', 'value': 'den'},
+                               {'label': 'Detroit Pistons', 'value': 'det'},
+                               {'label': 'Houston Rockets', 'value': 'hou'},
+                               {'label': 'Indiana Pacers', 'value': 'ind'},
+                               {'label': 'LA Clippers', 'value': 'lac'},
+                               {'label': 'LA Lakers', 'value': 'lal'},
+                               {'label': 'Memphis Grizzlies', 'value': 'mem'},
+                               {'label': 'Miami Heat', 'value': 'mia'},
+                               {'label': 'Milwaukee Bucks', 'value': 'mil'},
+                               {'label': 'Minnesota Timberwolves', 'value': 'min'},
+                               {'label': 'New Orleans Pelicans', 'value': 'no'},
+                               {'label': 'New York Knicks', 'value': 'mia'},
+                               {'label': 'Oklahoma City Thunder', 'value': 'okc'},
+                               {'label': 'Orlando Magics', 'value': 'orl'},
+                               {'label': 'Philadelphia 76ers', 'value': 'phi'},
+                               {'label': 'Phoenix Suns', 'value': 'phx'},
+                               {'label': 'Portland Trail Blazers', 'value': 'por'},
+                               {'label': 'Sacramento Kings', 'value': 'sac'},
+                               {'label': 'San Antonio Spurs', 'value': 'sa'},
+                               {'label': 'Toronto Raptors', 'value': 'tor'},
+                               {'label': 'Utah Jazz', 'value': 'utah'},
+                               {'label': 'Washington Wizards', 'value': 'wsh'}
+
+
+                           ],
+                           multi=True
+
+                       ),
+                       dcc.Graph(id='player_salary',
+                           figure={
+                                'data': [
+                                    {'x': list(player_salaries.keys()),
+                                     'y': list(player_salaries.values()),
+                                     'type': 'line', 'name': 'player_salary'}
+                                        ]
+                                 })
+                       ])
 
 if __name__ == '__main__':
     app.run_server(debug=True)
