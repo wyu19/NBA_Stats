@@ -70,10 +70,10 @@ def extract_info(data, skip, *break_string):
 
 def sort_allstats(stats, stat_indices):
     s = []
-    counter = 0;
+    counter = 0
     for i in stats:
         if counter == 16:
-            counter = 0;
+            counter = 0
         if counter in stat_indices:
             s.append(i)
         counter += 1
@@ -125,10 +125,12 @@ def print_team(t_dict):
 #reused variables
 
 url_dict = {}
-team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
-                  'ind', 'lac', 'mem', 'mia', 'mil', 'no', 'nyk', 'okc', 'orl', 'phi', 'phx',
-                 'por', 'sac', 'sas', 'tor', 'utah', 'was'
-                ]
+# team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
+#                   'ind', 'lac', 'mem', 'mia', 'mil', 'no', 'nyk', 'okc', 'orl', 'phi', 'phx',
+#                  'por', 'sac', 'sas', 'tor', 'utah', 'was'
+#                 ]
+team_initials = ['gs','bos']
+
 
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
@@ -140,6 +142,7 @@ season_type = "/seasontype/2"
 #accesses all the nba roster links and infos
 
 for t, init in enumerate(team_initials, 0):
+    print('Team {}'.format(t))
     roster_url = roster_link+init
     stat_url = stats_link+init+season_type
     roster_req = connect(roster_url, name="test", email="test_mail")
@@ -159,18 +162,15 @@ for t, init in enumerate(team_initials, 0):
 
     players = extract_info(all_stats[16:], 16, 'Totals')              #sort out the players and salaries from the roster link
     player_salaries = create_salary_dict(roster[10:])        #need to cut off the extra stuff from after players
-    # salaries = list(player_salaries.values())
 
-
-    players_dict = {p: {s: 0 for s in stats_list} for p in players}  #created the dictionary with all the players from one team
-    team_dict = {team_initials[t]: {p: {s: 0 for s in stats_list} for p in players}}
+    players_dict = {p: {s: 0 for s in stats_list} for p in players}; #created the dictionary with all the players from one team
+    team_dict.update({team_initials[t]: {p: {s: 0 for s in stats_list} for p in players}})
     stats_indices = [2, 4, 5, 8, 9, 10, 11]
     wanted_stats = sort_allstats(all_stats[16:], stats_indices)
     fill_dict(team_dict[team_initials[t]], wanted_stats, stats_list, player_salaries)
     zero_salaries(team_dict[team_initials[t]])
     print_team(team_dict)
     player_salaries = {p: (0 if player_salaries[p] == '\xa0' else player_salaries[p]) for p in player_salaries}   #replace all the '\xa0 with 0's
-    print(player_salaries)
 
     url_dict.update({roster_url: roster_req})
     url_dict.update({stat_url: roster_req})
@@ -181,15 +181,36 @@ for t, init in enumerate(team_initials, 0):
         else:
             print("{} 's status code is {} and {} 's status code is {} ".format(roster_url, roster_req.status_code, stat_url, stat_req.status_code))
 
-    add_more = input("Do you want to continue? Enter yes or no: ")
-    if add_more == 'no':
-        break;
+    # add_more = input("Do you want to continue? Enter yes or no: ")
+    # if add_more == 'no':
+    #     break
 
 print(url_dict)
-
+print(team_dict)
 # Graph code ----------------------------------------------------------------
 
 app = dash.Dash()
+p_list=[]
+x_list=[]
+y_list=[]
+for i in team_initials:
+    l = team_dict[i].keys()
+    l = list(l)
+    if p_list is None:
+        p_list = [i for i in l]
+    else:
+        p_list.extend(l)
+    for j in team_dict[i]:
+        x_list.append(team_dict[i][j]['Salary'])
+        y_list.append(team_dict[i][j]['PPG'])
+#make it into a matrix
+# and do it like the example
+
+print(p_list)
+print(x_list)
+print(y_list)
+
+
 app.layout = html.Div([html.H1('NBA Statistics'),
                        html.Label('Select a team'),
                        dcc.Dropdown(
@@ -241,11 +262,11 @@ app.layout = html.Div([html.H1('NBA Statistics'),
                                  figure={
                                      'data': [
                                          go.Scatter(
-
-                                             x= [],  #gottta put list of salaries in here
-                                             y=[],   #this thing only takes lists does'nt seem
-                                                                                    #to plot with just one value
-                                             text=p,
+                                             # x=[team_dict[i][p]['Salary']],
+                                             # y=[team_dict[i][p]['PPG']],
+                                             x=x_list,
+                                             y=y_list,
+                                             text=p_list,
                                              mode='markers',
                                              opacity=0.7,
                                              marker={
@@ -253,9 +274,9 @@ app.layout = html.Div([html.H1('NBA Statistics'),
                                                  'line': {'width': .5, 'color': 'black'}
                                              },
                                              name=i
-                                         )   #for i in team_initials  use this line when the dictionary contains all the teams values
-                                             for p in team_dict['gs'].keys()
-                                             for i in team_initials
+                                         )for i in team_initials
+                                          # for p in team_dict[i]
+
                                      ],
                                      'layout': go.Layout(
                                          xaxis={'type': 'log', 'title': 'Salary'},#make x and y variables
