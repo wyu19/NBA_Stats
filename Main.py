@@ -3,6 +3,7 @@ import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
+import plotly.graph_objs as go
 from bs4 import BeautifulSoup
 from html.parser import HTMLParser
 
@@ -229,12 +230,41 @@ app.layout = html.Div([html.H1('NBA Statistics'),
 
                        ),
                        dcc.Graph(id='player_salary',
-                           figure={
-                                'data': [
-                                    {'x': list(player_salaries.keys()),
-                                     'y': list(player_salaries.values()),
-                                     'type': 'line', 'name': 'player_salary'}
+                                 figure={
+                                    'data': [
+                                        {'x': list(player_salaries.keys()),
+                                         'y': list(player_salaries.values()),
+                                         'type': 'line', 'name': 'player_salary'}
                                         ]
+                                 }),
+                       dcc.Graph(id='scatter',
+                                 figure={
+                                     'data': [
+                                         go.Scatter(
+
+                                             x= [],  #gottta put list of salaries in here
+                                             y=[],   #this thing only takes lists does'nt seem
+                                                                                    #to plot with just one value
+                                             text=p,
+                                             mode='markers',
+                                             opacity=0.7,
+                                             marker={
+                                                 'size': 15,
+                                                 'line': {'width': .5, 'color': 'black'}
+                                             },
+                                             name=i
+                                         )   #for i in team_initials  use this line when the dictionary contains all the teams values
+                                             for p in team_dict['gs'].keys()
+                                             for i in team_initials
+                                     ],
+                                     'layout': go.Layout(
+                                         xaxis={'type': 'log', 'title': 'Salary'},#make x and y variables
+                                         yaxis={'type':'log', 'title': 'Points'},
+                                         margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+                                         legend={'x': 0, 'y': 1},
+                                         hovermode='closest'
+
+                                     )
                                  })
                        ])
 
