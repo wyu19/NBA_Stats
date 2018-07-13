@@ -125,11 +125,11 @@ def print_team(t_dict):
 #reused variables
 
 url_dict = {}
-# team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
-#                   'ind', 'lac', 'mem', 'mia', 'mil', 'no', 'nyk', 'okc', 'orl', 'phi', 'phx',
-#                  'por', 'sac', 'sas', 'tor', 'utah', 'was'
-#                 ]
-team_initials = ['gs','bos']
+team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
+                  'ind', 'lac', 'mem', 'mia', 'mil', 'no', 'nyk', 'okc', 'orl', 'phi', 'phx',
+                 'por', 'sac', 'sas', 'tor', 'utah', 'was'
+                ]
+
 
 
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
@@ -190,27 +190,6 @@ print(team_dict)
 # Graph code ----------------------------------------------------------------
 
 app = dash.Dash()
-p_list=[]
-x_list=[]
-y_list=[]
-for i in team_initials:
-    l = team_dict[i].keys()
-    l = list(l)
-    if p_list is None:
-        p_list = [i for i in l]
-    else:
-        p_list.extend(l)
-    for j in team_dict[i]:
-        x_list.append(team_dict[i][j]['Salary'])
-        y_list.append(team_dict[i][j]['PPG'])
-#make it into a matrix
-# and do it like the example
-
-print(p_list)
-print(x_list)
-print(y_list)
-
-
 app.layout = html.Div([html.H1('NBA Statistics'),
                        html.Label('Select a team'),
                        dcc.Dropdown(
@@ -262,11 +241,10 @@ app.layout = html.Div([html.H1('NBA Statistics'),
                                  figure={
                                      'data': [
                                          go.Scatter(
-                                             # x=[team_dict[i][p]['Salary']],
-                                             # y=[team_dict[i][p]['PPG']],
-                                             x=x_list,
-                                             y=y_list,
-                                             text=p_list,
+                                             x=[team_dict[i][s]['Salary'] for s in team_dict[i]],
+                                             y=[team_dict[i][s]['PPG'] for s in team_dict[i]],
+
+                                             text=[p for p in team_dict[i]],
                                              mode='markers',
                                              opacity=0.7,
                                              marker={
@@ -275,7 +253,7 @@ app.layout = html.Div([html.H1('NBA Statistics'),
                                              },
                                              name=i
                                          )for i in team_initials
-                                          # for p in team_dict[i]
+
 
                                      ],
                                      'layout': go.Layout(
