@@ -230,7 +230,8 @@ app.layout = html.Div(
                            multi=True
 
                        ),
-                       dcc.Graph(id='player_salary',
+
+                       dcc.Graph(id='player_salary',                                     #----beginning of code for 1st graph
                                  figure={
                                     'data': [
                                         {'x': list(player_salaries.keys()),
@@ -238,10 +239,13 @@ app.layout = html.Div(
                                          'type': 'line', 'name': 'player_salary'}
                                         ]
                                  }),
-                       html.Div([
-                        html.Label('Select the data for the Y-axis'),
-                        dcc.Dropdown(
-                         options=[
+
+                       html.Div(children=[                                  #---- beginning of code for drop down buttons for x and y values
+                        html.Div([
+                         html.Label('Select the data for the Y-axis'),
+                         dcc.Dropdown(
+                          id='y-values',
+                          options=[
                              {'label': 'GP', 'value': 'GP'},
                              {'label': 'Min', 'value': 'Min'},
                              {'label': 'PPG', 'value': 'PPG'},
@@ -250,10 +254,30 @@ app.layout = html.Div(
                              {'label': 'SPG', 'value': 'SPG'},
                              {'label': 'BPG', 'value': 'BPG'},
                              {'label': 'Salary', 'value': 'Salary'}
-                                 ]
+                                 ],
+                          value='PPG'
 
-                        )], style={'width': '150px'}),
-                        dcc.Graph(id='scatter',
+                         )], style={'display': 'inline-block'}),
+                        html.Div([
+                           html.Label('Select the data for the X-axis'),
+                           dcc.Dropdown(
+                               id ='x-values',
+                               options=[
+                                   {'label': 'GP', 'value': 'GP'},
+                                   {'label': 'Min', 'value': 'Min'},
+                                   {'label': 'PPG', 'value': 'PPG'},
+                                   {'label': 'RPG', 'value': 'RPG'},
+                                   {'label': 'APG', 'value': 'APG'},
+                                   {'label': 'SPG', 'value': 'SPG'},
+                                   {'label': 'BPG', 'value': 'BPG'},
+                                   {'label': 'Salary', 'value': 'Salary'}
+                               ],
+                               value='Salary'
+
+                           )], style={'display': 'inline-block', 'margin-left': '10px'})],
+                           style={'display': 'inline-block'}),
+
+                        dcc.Graph(id='scatter',    #try just having the id of graph without anything in it                      #--- beginning of code for scatter plot
                                   figure={
                                      'data': [
                                          go.Scatter(
@@ -273,8 +297,8 @@ app.layout = html.Div(
 
                                      ],
                                      'layout': go.Layout(
-                                         xaxis={'type': 'log', 'title': 'Salary'},#make x and y variables
-                                         yaxis={'type':'log', 'title': 'Points'},
+                                         xaxis={'type': 'log', 'title': 'Salary'},       #make x and y variables
+                                         yaxis={'type': 'log', 'title': 'Points'},
                                          margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
                                          legend={'x': 0, 'y': 1},
                                          hovermode='closest'
@@ -282,6 +306,35 @@ app.layout = html.Div(
                                      )
                                   })
                        ])
+
+@app.callback(
+    dash.dependencies.Output('scatter', 'figure'),
+    [dash.dependencies.Input('x-values', 'value'),
+     dash.dependencies.Input('y-values', 'value')])
+def update_graph(x_values, y_values):
+
+    return {
+        'data': [go.Scatter(
+            x=[team_dict[i][p][x_values] for p in team_dict[i]],
+            y=[team_dict[i][p][y_values] for p in team_dict[i]],
+            text=[p for p in team_dict[i]],
+            mode='markers',
+            marker={
+                'size': 15,
+                'line': {'width': .5, 'color': 'black'}
+            },
+            name=i
+        ) for i in team_initials
+        ],
+        'layout': go.Layout(
+           xaxis={'type': 'log', 'title': x_values},
+           yaxis={'type': 'log', 'title': y_values},
+           margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+           legend={'x': 0, 'y': 1},
+           hovermode='closest'
+        )
+
+    }
 
 
 if __name__ == '__main__':
