@@ -125,12 +125,12 @@ def print_team(t_dict):
 #reused variables
 
 url_dict = {}
-team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
-                  'ind', 'lac', 'mem', 'mia', 'mil', 'no', 'nyk', 'okc', 'orl', 'phi', 'phx',
-                 'por', 'sac', 'sas', 'tor', 'utah', 'was'
-                ]
+# team_initials = ['gs', 'bos', 'atl', 'bkn', 'cha', 'chi', 'cle', 'dal', 'den', 'det', 'hou',
+#                   'ind', 'lac', 'mem', 'mia', 'mil', 'no', 'nyk', 'okc', 'orl', 'phi', 'phx',
+#                  'por', 'sac', 'sas', 'tor', 'utah', 'was'
+#                 ]
 
-
+team_initials = ['gs', 'bos']
 
 roster_link = 'http://www.espn.com/nba/team/roster/_/name/'
 stats_link = 'http://www.espn.com/nba/team/stats/_/name/'
@@ -190,7 +190,8 @@ print(team_dict)
 # Graph code ----------------------------------------------------------------
 
 app = dash.Dash()
-app.layout = html.Div([html.H1('NBA Statistics'),
+app.layout = html.Div(
+                      [html.H1('NBA Statistics'),
                        html.Label('Select a team'),
                        dcc.Dropdown(
                            options=[
@@ -237,8 +238,23 @@ app.layout = html.Div([html.H1('NBA Statistics'),
                                          'type': 'line', 'name': 'player_salary'}
                                         ]
                                  }),
-                       dcc.Graph(id='scatter',
-                                 figure={
+                       html.Div([
+                        html.Label('Select the data for the Y-axis'),
+                        dcc.Dropdown(
+                         options=[
+                             {'label': 'GP', 'value': 'GP'},
+                             {'label': 'Min', 'value': 'Min'},
+                             {'label': 'PPG', 'value': 'PPG'},
+                             {'label': 'RPG', 'value': 'RPG'},
+                             {'label': 'APG', 'value': 'APG'},
+                             {'label': 'SPG', 'value': 'SPG'},
+                             {'label': 'BPG', 'value': 'BPG'},
+                             {'label': 'Salary', 'value': 'Salary'}
+                                 ]
+
+                        )], style={'width': '150px'}),
+                        dcc.Graph(id='scatter',
+                                  figure={
                                      'data': [
                                          go.Scatter(
                                              x=[team_dict[i][s]['Salary'] for s in team_dict[i]],
@@ -264,8 +280,9 @@ app.layout = html.Div([html.H1('NBA Statistics'),
                                          hovermode='closest'
 
                                      )
-                                 })
+                                  })
                        ])
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
