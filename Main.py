@@ -179,11 +179,8 @@ for t, init in enumerate(team_initials, 0):
         if roster_req.status_code == 404:
             print("robots.txt not found for {}").format(str(roster_url))
         else:
-            print("{} 's status code is {} and {} 's status code is {} ".format(roster_url, roster_req.status_code, stat_url, stat_req.status_code))
-
-    # add_more = input("Do you want to continue? Enter yes or no: ")
-    # if add_more == 'no':
-    #     break
+            print("{} 's status code is {} and {} 's status code is {} ".format(roster_url, roster_req.status_code,
+                                                                                stat_url, stat_req.status_code))
 
 print(url_dict)
 print(team_dict)
@@ -191,9 +188,20 @@ print(team_dict)
 
 app = dash.Dash()
 app.layout = html.Div(
-                      [html.H1('NBA Statistics'),
+                      [html.Div([
+                       html.H1('NBA Statistics'),
+                       html.Img(src='http://content.sportslogos.net/news/2017/07/New-NBA-Logo-1.png', className='logo'),
+                       ], style={'.logo': {'width': '50px', 'length': '200px', 'float': 'right'},
+                                 'font': 'Helvetica',
+                                 'font-size': '25px',
+                                 'display': 'inline-block',
+                                  'width': '250px',
+                                  'height': '150px',
+                                  'margin-bottom': '20px'
+                                 }),
                        html.Label('Select a team'),
                        dcc.Dropdown(
+                           id='team_dropdown',
                            options=[
                                {'label': 'Golden State Warriors', 'value': 'gs'},
                                {'label': 'Boston Celtics', 'value': 'bos'},
@@ -225,20 +233,9 @@ app.layout = html.Div(
                                {'label': 'Utah Jazz', 'value': 'utah'},
                                {'label': 'Washington Wizards', 'value': 'wsh'}
 
-
                            ],
                            multi=True
-
-                       ),
-
-                       dcc.Graph(id='player_salary',                                     #----beginning of code for 1st graph
-                                 figure={
-                                    'data': [
-                                        {'x': list(player_salaries.keys()),
-                                         'y': list(player_salaries.values()),
-                                         'type': 'line', 'name': 'player_salary'}
-                                        ]
-                                 }),
+                       ), dcc.Graph(id='player_salary'),
 
                        html.Div(children=[                                  #---- beginning of code for drop down buttons for x and y values
                         html.Div([
@@ -257,11 +254,11 @@ app.layout = html.Div(
                                  ],
                           value='PPG'
 
-                         )], style={'display': 'inline-block'}),
+                         )], style={'display': 'inline-block', 'font-family': 'Helvetica'}),
                         html.Div([
                            html.Label('Select the data for the X-axis'),
                            dcc.Dropdown(
-                               id ='x-values',
+                               id='x-values',
                                options=[
                                    {'label': 'GP', 'value': 'GP'},
                                    {'label': 'Min', 'value': 'Min'},
@@ -272,40 +269,15 @@ app.layout = html.Div(
                                    {'label': 'BPG', 'value': 'BPG'},
                                    {'label': 'Salary', 'value': 'Salary'}
                                ],
-                               value='Salary'
+                               value='Salary'                    #whatever value is equal to that will be the default value.
 
                            )], style={'display': 'inline-block', 'margin-left': '10px'})],
-                           style={'display': 'inline-block'}),
+                           style={'display': 'inline-block', 'font-family': 'Helvetica'}),
 
-                        dcc.Graph(id='scatter',    #try just having the id of graph without anything in it                      #--- beginning of code for scatter plot
-                                  figure={
-                                     'data': [
-                                         go.Scatter(
-                                             x=[team_dict[i][s]['Salary'] for s in team_dict[i]],
-                                             y=[team_dict[i][s]['PPG'] for s in team_dict[i]],
+                        dcc.Graph(id='scatter')   #---scatter graph
 
-                                             text=[p for p in team_dict[i]],
-                                             mode='markers',
-                                             opacity=0.7,
-                                             marker={
-                                                 'size': 15,
-                                                 'line': {'width': .5, 'color': 'black'}
-                                             },
-                                             name=i
-                                         )for i in team_initials
-
-
-                                     ],
-                                     'layout': go.Layout(
-                                         xaxis={'type': 'log', 'title': 'Salary'},       #make x and y variables
-                                         yaxis={'type': 'log', 'title': 'Points'},
-                                         margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
-                                         legend={'x': 0, 'y': 1},
-                                         hovermode='closest'
-
-                                     )
-                                  })
                        ])
+
 
 @app.callback(
     dash.dependencies.Output('scatter', 'figure'),
@@ -334,6 +306,17 @@ def update_graph(x_values, y_values):
            hovermode='closest'
         )
 
+    }
+
+
+@app.callback(
+    dash.dependencies.Output('player_salary', 'figure'),
+    [dash.dependencies.Input('team_dropdown', 'value')])
+def update_salary_graph(teams):
+
+    return{
+        'data': [{'x': [p for p in team_dict[i]], 'y':[team_dict[i][p]['Salary'] for p in team_dict[i]],
+                  'type': 'bar', 'name': i} for i in teams]
     }
 
 
